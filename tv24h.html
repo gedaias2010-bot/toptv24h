@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOP TV 24H</title>
+    <meta name="description" content="Sistema de Controle de Clientes - TOP TV 24H">
+    <meta name="keywords" content="TV, IPTV, Clientes, Controle, Financeiro">
+    <meta name="author" content="TOP TV 24H">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='15' fill='%23000'/%3E%3Cpath d='M25 35 Q25 25 35 25 L65 25 Q75 25 75 35 L75 65 Q75 75 65 75 L35 75 Q25 75 25 65 Z' fill='none' stroke='%2300d4ff' stroke-width='3'/%3E%3Cpath d='M40 40 L60 52 L40 64 Z' fill='%2300d4ff'/%3E%3C/svg%3E">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-box h2 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .login-box p {
+            color: #aaa;
+            margin-bottom: 20px;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        .login-box input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+            color: white;
+            transition: all 0.3s;
+        }
+        .login-box button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+        .login-error {
+            color: #ff4757;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+        .user-info span {
+            color: #aaa;
+        }
+        .user-info strong {
+            color: #00d4ff;
+        }
+        .btn-logout {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .readonly-mode .btn-primary,
+        .readonly-mode .btn-success,
+        .readonly-mode .btn-danger,
+        .readonly-mode .btn-warning {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .readonly-mode input,
+        .readonly-mode select {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        .readonly-banner {
+            background: rgba(255, 165, 2, 0.2);
+            border: 1px solid rgba(255, 165, 2, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            color: #ffa500;
+            text-align: center;
+            display: none;
+        }
+        .theme-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .theme-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .theme-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .theme-option:hover {
+            transform: scale(1.1);
+        }
+        .theme-option.active {
+            border-color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+    </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-group input::placeholder {
+            color: #666;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff 0%, #7b2cbf 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4ff 100%);
+            color: #1a1a2e;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffa502 0%, #ff6348 100%);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: #00d4ff;
+        }
+
+        .stat-card p {
+            color: #aaa;
+        }
+
+        .stat-card.warning h3 {
+            color: #ffa502;
+        }
+
+        .stat-card.danger h3 {
+            color: #ff4757;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #00d4ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-ok {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .status-warning {
+            background: rgba(255, 165, 2, 0.2);
+            color: #ffa502;
+        }
+
+        .status-danger {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .vencimento-info {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .vencimento-info.warning {
+            color: #ffa502;
+        }
+
+        .vencimento-info.danger {
+            color: #ff4757;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%23000'/%3E%3Cpath d='M40 60 Q40 40 60 40 L140 40 Q160 40 160 60 L160 120 Q160 140 140 140 L60 140 Q40 140 40 120 Z' fill='none' stroke='%2300d4ff' stroke-width='4'/%3E%3Cpath d='M80 70 L120 95 L80 120 Z' fill='%2300d4ff'/%3E%3Cline x1='100' y1='40' x2='80' y2='20' stroke='%2300d4ff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='100' y1='40' x2='120' y2='20' stroke='%2300d4ff' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='80' cy='20' r='5' fill='%2300d4ff'/%3E%3Ccircle cx='120' cy='20' r='5' fill='%2300d4ff'/%3E%3Ctext x='100' y='170' text-anchor='middle' fill='%23fff' font-size='24' font-weight='bold' font-family='Arial'%3ETOP TV%3C/text%3E%3Ctext x='100' y='190' text-anchor='middle' fill='%2300d4ff' font-size='14' font-family='Arial'%3EIPTV%3C/text%3E%3C/svg%3E" alt="Top TV IPTV" style="width: 120px; height: 120px; margin-bottom: 15px;">
+            <h2>📺 Top TV 24h</h2>
+            <p>Sistema de Controle de Clientes</p>
+            <input type="text" id="loginUser" placeholder="Usuário" autocomplete="off">
+            <input type="password" id="loginPass" placeholder="Senha">
+            <button onclick="fazerLogin()">Entrar</button>
+            <p class="login-error" id="loginError">Usuário ou senha incorretos!</p>
+            <p style="color: #666; font-size: 12px; margin-top: 15px;">
+                Admin: admin / admin123<br>
+                Usuário: user / user123
+            </p>
+        </div>
+    </div>
+
+    <!-- Informações do Usuário -->
+    <div class="user-info" id="userInfo" style="display: none;">
+        <div>
+            <span>Usuário: <strong id="currentUserName">-</strong></span>
+            <span style="margin-left: 15px;">Nível: <strong id="currentUserLevel">-</strong></span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="theme-btn" onclick="toggleThemeSelector()">🎨 Temas</button>
+            <button class="btn-logout" onclick="fazerLogout()">Sair</button>
+        </div>
+    </div>
+
+    <!-- Seletor de Temas -->
+    <div class="theme-selector" id="themeSelector" style="display: none;">
+        <div class="theme-option" style="background: linear-gradient(135deg, #1a1a2e, #16213e);" data-theme="dark" onclick="aplicarTema('dark')" title="Escuro"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #667eea, #764ba2);" data-theme="purple" onclick="aplicarTema('purple')" title="Roxo"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #11998e, #38ef7d);" data-theme="green" onclick="aplicarTema('green')" title="Verde"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #eb3349, #f45c43);" data-theme="red" onclick="aplicarTema('red')" title="Vermelho"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #f093fb, #f5576c);" data-theme="pink" onclick="aplicarTema('pink')" title="Rosa"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe);" data-theme="blue" onclick="aplicarTema('blue')" title="Azul"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #fa709a, #fee140);" data-theme="sunset" onclick="aplicarTema('sunset')" title="Pôr do Sol"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3);" data-theme="light" onclick="aplicarTema('light')" title="Claro"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #232526, #414345);" data-theme="black" onclick="aplicarTema('black')" title="Preto"></div>
+        <div class="theme-option" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);" data-theme="peach" onclick="aplicarTema('peach')" title="Pêssego"></div>
+    </div>
+
+    <!-- Banner de Modo Somente Leitura -->
+    <div class="readonly-banner" id="readonlyBanner">
+        ⚠️ Modo somente leitura - Apenas o administrador pode fazer alterações
+    </div>
+
+    <div class="container" id="mainContainer" style="display: none;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%23000'/%3E%3Cpath d='M40 60 Q40 40 60 40 L140 40 Q160 40 160 60 L160 120 Q160 140 140 140 L60 140 Q40 140 40 120 Z' fill='none' stroke='%2300d4ff' stroke-width='4'/%3E%3Cpath d='M80 70 L120 95 L80 120 Z' fill='%2300d4ff'/%3E%3Cline x1='100' y1='40' x2='80' y2='20' stroke='%2300d4ff' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='100' y1='40' x2='120' y2='20' stroke='%2300d4ff' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='80' cy='20' r='5' fill='%2300d4ff'/%3E%3Ccircle cx='120' cy='20' r='5' fill='%2300d4ff'/%3E%3Ctext x='100' y='170' text-anchor='middle' fill='%23fff' font-size='24' font-weight='bold' font-family='Arial'%3ETOP TV%3C/text%3E%3Ctext x='100' y='190' text-anchor='middle' fill='%2300d4ff' font-size='14' font-family='Arial'%3EIPTV%3C/text%3E%3C/svg%3E" alt="Top TV IPTV" style="width: 80px; height: 80px;">
+            <h1>📺 Top TV 24h</h1>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalClientes">0</h3>
+                <p>Total de Clientes</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="clientesAtivos">0</h3>
+                <p>Clientes Ativos</p>
+            </div>
+            <div class="stat-card warning">
+                <h3 id="clientesVencendo">0</h3>
+                <p>Vencendo (7 dias)</p>
+            </div>
+            <div class="stat-card danger">
+                <h3 id="clientesVencidos">0</h3>
+                <p>Vencidos</p>
+            </div>
+        </div>
+
+        <div class="card form-section">
+            <h2 id="formTitle">➕ Novo Cliente</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button type="button" class="btn btn-success" id="btnRapido">
+                    ⚡ Cadastro Rápido (1 Crédito - R$ 30,00)
+                </button>
+                <button type="button" class="btn btn-primary" id="btnFinanceiro">
+                    💰 Financeiro
+                </button>
+                <button type="button" class="btn btn-warning" id="btnAdmin">
+                    🔧 Administração
+                </button>
+            </div>
+            <form id="clienteForm">
+                <input type="hidden" id="clienteId">
+                <div class="form-group">
+                    <label for="nome">Nome Completo *</label>
+                    <input type="text" id="nome" required placeholder="Digite o nome do cliente">
+                </div>
+                <div class="form-group">
+                    <label for="telefone">Telefone *</label>
+                    <input type="tel" id="telefone" required placeholder="(00) 00000-0000">
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" placeholder="email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="plano">Plano *</label>
+                    <select id="plano" required style="width: 100%; padding: 12px 15px; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px; font-size: 16px; background: rgba(0,0,0,0.3); color: #fff;">
+                        <option value="">Selecione um plano</option>
+                        <option value="Mensal">Mensal - R$ 30,00</option>
+                        <option value="Trimestral">Trimestral - R$ 81,00</option>
+                        <option value="Semestral">Semestral - R$ 155,00</option>
+                        <option value="Anual">Anual - R$ 299,00</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="valor">Valor do Plano (R$) *</label>
+                    <input type="number" id="valor" required placeholder="0.00" step="0.01" min="0" readonly>
+                    <small style="color: #00ff88; font-size: 12px;">Selecione o plano para ver o valor</small>
+                </div>
+                <div class="form-group">
+                    <label for="dataCadastro">Data de Cadastro *</label>
+                    <input type="date" id="dataCadastro" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    💾 Salvar Cliente
+                </button>
+                <button type="button" class="btn btn-warning" id="cancelBtn" style="display: none;">
+                    ❌ Cancelar
+                </button>
+            </form>
+        </div>
+
+        <div class="card table-section">
+            <h2>📊 Lista de Clientes</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Buscar por nome, telefone ou plano...">
+            </div>
+            <div id="clientesTableContainer">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Plano</th>
+                            <th>Valor</th>
+                            <th>Cadastro</th>
+                            <th>Vencimento</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientesTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Cadastro Rápido -->
+    <div id="modalRapido" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; max-width: 400px; width: 90%;">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">⚡ Cadastro Rápido</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Plano: <strong style="color: #00ff88;">1 Crédito = R$ 30,00</strong></p>
+            <div class="form-group">
+                <label for="rapidoNome">Nome Completo *</label>
+                <input type="text" id="rapidoNome" required placeholder="Digite o nome do cliente">
+            </div>
+            <div class="form-group">
+                <label for="rapidoTelefone">Telefone *</label>
+                <input type="tel" id="rapidoTelefone" required placeholder="(00) 00000-0000">
+            </div>
+            <div class="form-group">
+                <label for="rapidoEmail">E-mail</label>
+                <input type="email" id="rapidoEmail" placeholder="email@exemplo.com">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-success" id="btnSalvarRapido" style="flex: 1;">
+                    💾 Salvar
+                </button>
+                <button type="button" class="btn btn-warning" id="btnFecharRapido" style="flex: 1;">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Financeiro -->
+    <div id="modalFinanceiro" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">💰 Financeiro - Saldo de Clientes Ativos</h2>
+            <div id="financeiroContent"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-warning" id="btnFecharFinanceiro" style="flex: 1;">
+                    ❌ Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Administração -->
+    <div id="modalAdmin" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">🔧 Painel de Administração</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                <button class="btn btn-primary" onclick="abrirFinanceiroAdmin()" style="padding: 20px;">
+                    💰 Financeiro<br><small>Saldo e Relatórios</small>
+                </button>
+                <button class="btn btn-success" onclick="exportarDados()" style="padding: 20px;">
+                    📊 Exportar Dados<br><small>Backup CSV</small>
+                </button>
+                <button class="btn btn-warning" onclick="limparDados()" style="padding: 20px;">
+                    🗑️ Limpar Dados<br><small>Resetar Sistema</small>
+                </button>
+                <button class="btn btn-danger" onclick="configurarPix()" style="padding: 20px;">
+                    ⚙️ Configurar Pix<br><small>Chave de Pagamento</small>
+                </button>
+            </div>
+
+            <div id="adminContent"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-warning" id="btnFecharAdmin" style="flex: 1;">
+                    ❌ Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Fatura -->
+    <div id="modalFatura" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: #fff; border-radius: 15px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; color: #333;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #1a1a2e; margin-bottom: 5px;">📺 Top TV 24h</h2>
+                <p style="color: #666; font-size: 14px;">Fatura de Serviços</p>
+            </div>
+            <div style="border-top: 2px dashed #ddd; border-bottom: 2px dashed #ddd; padding: 15px 0; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Cliente:</span>
+                    <strong id="faturaNome">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Telefone:</span>
+                    <strong id="faturaTelefone">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Plano:</span>
+                    <strong id="faturaPlano">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #666;">Vencimento:</span>
+                    <strong id="faturaVencimento">-</strong>
+                </div>
+            </div>
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #666;">Total a Pagar:</span>
+                    <strong id="faturaValor" style="color: #11998e; font-size: 1.5rem;">R$ 0,00</strong>
+                </div>
+            </div>
+            <div style="background: #e3f2fd; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <p style="color: #1976d2; font-weight: 600; margin-bottom: 10px;">💳 Pagamento via Pix</p>
+                <p style="color: #666; font-size: 14px; margin-bottom: 5px;">Chave Pix:</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="pixKey" value="toptv24h@pagamento.com" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px;" readonly>
+                    <button class="btn btn-primary btn-sm" onclick="copiarPix()">📋 Copiar</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-success" id="btnEnviarFatura" style="flex: 1;">
+                    📤 Enviar
+                </button>
+                <button type="button" class="btn btn-warning" id="btnFecharFatura" style="flex: 1;">
+                    ❌ Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sistema de Usuários
+        const USUARIOS = {
+            'admin': { senha: 'admin123', nivel: 'admin', nome: 'Administrador' },
+            'user': { senha: 'user123', nivel: 'usuario', nome: 'Usuário' }
+        };
+
+        let currentUser = null;
+
+        // Array para armazenar os clientes
+        let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+        let editingId = null;
+
+        // Função de Login
+        function fazerLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value;
+
+            if (USUARIOS[user] && USUARIOS[user].senha === pass) {
+                currentUser = {
+                    usuario: user,
+                    nivel: USUARIOS[user].nivel,
+                    nome: USUARIOS[user].nome
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                mostrarSistema();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('loginError').style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Função de Logout
+        function fazerLogout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            location.reload();
+        }
+
+        // Mostrar Sistema
+        function mostrarSistema() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'flex';
+            document.getElementById('currentUserName').textContent = currentUser.nome;
+            document.getElementById('currentUserLevel').textContent = currentUser.nivel === 'admin' ? 'Administrador' : 'Usuário';
+
+            // Verificar se é usuário comum (somente leitura)
+            if (currentUser.nivel !== 'admin') {
+                document.getElementById('readonlyBanner').style.display = 'block';
+                document.body.classList.add('readonly-mode');
+            }
+        }
+
+        // Verificar se já está logado
+        window.onload = function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                mostrarSistema();
+            }
+            // Aplicar tema salvo
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                aplicarTema(savedTheme, false);
+            }
+        };
+
+        // Sistema de Temas
+        const TEMAS = {
+            dark: { bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.05)' },
+            purple: { bg: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.1)' },
+            green: { bg: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.1)' },
+            red: { bg: 'linear-gradient(135deg, #eb3349 0%, #f45c43 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.1)' },
+            pink: { bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.1)' },
+            blue: { bg: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.1)' },
+            sunset: { bg: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', text: '#333', card: 'rgba(255, 255, 255, 0.2)' },
+            light: { bg: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', text: '#333', card: 'rgba(255, 255, 255, 0.3)' },
+            black: { bg: 'linear-gradient(135deg, #232526 0%, #414345 100%)', text: '#fff', card: 'rgba(255, 255, 255, 0.05)' },
+            peach: { bg: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)', text: '#333', card: 'rgba(255, 255, 255, 0.2)' }
+        };
+
+        function toggleThemeSelector() {
+            const selector = document.getElementById('themeSelector');
+            selector.style.display = selector.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function aplicarTema(tema, salvar = true) {
+            const t = TEMAS[tema];
+            if (!t) return;
+
+            document.body.style.background = t.bg;
+            document.body.style.color = t.text;
+
+            // Atualizar cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.background = t.card;
+            });
+
+            // Marcar tema ativo
+            document.querySelectorAll('.theme-option').forEach(opt => {
+                opt.classList.remove('active');
+                if (opt.dataset.theme === tema) {
+                    opt.classList.add('active');
+                }
+            });
+
+            // Salvar tema
+            if (salvar) {
+                localStorage.setItem('theme', tema);
+            }
+        }
+
+        // Elementos do DOM
+        const form = document.getElementById('clienteForm');
+        const nomeInput = document.getElementById('nome');
+        const telefoneInput = document.getElementById('telefone');
+        const emailInput = document.getElementById('email');
+        const planoInput = document.getElementById('plano');
+        const valorInput = document.getElementById('valor');
+        const dataCadastroInput = document.getElementById('dataCadastro');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const formTitle = document.getElementById('formTitle');
+        const searchInput = document.getElementById('searchInput');
+        const tableBody = document.getElementById('clientesTableBody');
+
+        // Definir data de cadastro como hoje por padrão
+        dataCadastroInput.valueAsDate = new Date();
+
+        // Valores dos planos
+        const PLANOS = {
+            'Mensal': 30.00,
+            'Trimestral': 81.00,
+            'Semestral': 155.00,
+            'Anual': 299.00
+        };
+
+        // Atualizar valor quando plano for selecionado
+        document.getElementById('plano').addEventListener('change', (e) => {
+            const plano = e.target.value;
+            if (plano && PLANOS[plano]) {
+                document.getElementById('valor').value = PLANOS[plano].toFixed(2);
+            } else {
+                document.getElementById('valor').value = '';
+            }
+        });
+
+        // Formatar telefone
+        function formatarTelefone(telefone) {
+            const numeros = telefone.replace(/\D/g, '');
+            if (numeros.length === 11) {
+                return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 7)}-${numeros.slice(7)}`;
+            } else if (numeros.length === 10) {
+                return `(${numeros.slice(0, 2)}) ${numeros.slice(2, 6)}-${numeros.slice(6)}`;
+            }
+            return telefone;
+        }
+
+        // Formatar valor monetário
+        function formatarValor(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor);
+        }
+
+        // Formatar data
+        function formatarData(data) {
+            return new Date(data).toLocaleDateString('pt-BR');
+        }
+
+        // Calcular dias até o vencimento
+        function diasAteVencimento(dataCadastro) {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            const cadastro = new Date(dataCadastro);
+            cadastro.setHours(0, 0, 0, 0);
+            const vencimento = new Date(cadastro);
+            vencimento.setDate(vencimento.getDate() + 30);
+            const diffTime = vencimento - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        // Obter status do cliente
+        function getStatusCliente(dataCadastro) {
+            const dias = diasAteVencimento(dataCadastro);
+            if (dias < 0) {
+                return { classe: 'status-danger', texto: 'Vencido', dias: dias };
+            } else if (dias <= 7) {
+                return { classe: 'status-warning', texto: 'Vencendo', dias: dias };
+            } else {
+                return { classe: 'status-ok', texto: 'Ativo', dias: dias };
+            }
+        }
+
+        // Salvar no localStorage
+        function salvarClientes() {
+            localStorage.setItem('clientes', JSON.stringify(clientes));
+        }
+
+        // Atualizar estatísticas
+        function atualizarStats() {
+            const total = clientes.length;
+            let ativos = 0;
+            let vencendo = 0;
+            let vencidos = 0;
+
+            clientes.forEach(c => {
+                const status = getStatusCliente(c.dataCadastro);
+                if (status.texto === 'Ativo') ativos++;
+                else if (status.texto === 'Vencendo') vencendo++;
+                else vencidos++;
+            });
+
+            document.getElementById('totalClientes').textContent = total;
+            document.getElementById('clientesAtivos').textContent = ativos;
+            document.getElementById('clientesVencendo').textContent = vencendo;
+            document.getElementById('clientesVencidos').textContent = vencidos;
+        }
+
+        // Renderizar tabela
+        function renderizarTabela(filtro = '') {
+            const clientesFiltrados = clientes.filter(c => 
+                c.nome.toLowerCase().includes(filtro.toLowerCase()) ||
+                c.telefone.includes(filtro) ||
+                c.plano.toLowerCase().includes(filtro.toLowerCase())
+            );
+
+            if (clientesFiltrados.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <p>Nenhum cliente encontrado</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = clientesFiltrados.map(cliente => {
+                const status = getStatusCliente(cliente.dataCadastro);
+                const vencimento = new Date(cliente.dataCadastro);
+                vencimento.setDate(vencimento.getDate() + 30);
+                
+                return `
+                    <tr>
+                        <td><strong>${cliente.nome}</strong></td>
+                        <td>${formatarTelefone(cliente.telefone)}</td>
+                        <td><span style="background: rgba(0, 212, 255, 0.2); padding: 4px 10px; border-radius: 15px; font-size: 14px;">${cliente.plano}</span></td>
+                        <td><strong style="color: #00ff88;">${formatarValor(cliente.valor)}</strong></td>
+                        <td>${formatarData(cliente.dataCadastro)}</td>
+                        <td>
+                            ${formatarData(vencimento.toISOString().split('T')[0])}
+                            <div class="vencimento-info ${status.classe.replace('status-', '')}">
+                                ${status.dias >= 0 ? `em ${status.dias} dias` : `há ${Math.abs(status.dias)} dias`}
+                            </div>
+                        </td>
+                        <td><span class="status ${status.classe}">${status.texto}</span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-primary btn-sm" onclick="gerarFatura(${cliente.id})">📄 Fatura</button>
+                                <button class="btn btn-success btn-sm" onclick="editarCliente(${cliente.id})">✏️ Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="excluirCliente(${cliente.id})">🗑️ Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Adicionar ou editar cliente
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Verificar se é admin
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode fazer alterações!');
+                return;
+            }
+
+            const cliente = {
+                id: editingId || Date.now(),
+                nome: nomeInput.value.trim(),
+                telefone: telefoneInput.value.trim(),
+                email: emailInput.value.trim(),
+                plano: planoInput.value,
+                valor: parseFloat(valorInput.value),
+                dataCadastro: dataCadastroInput.value
+            };
+
+            if (editingId) {
+                const index = clientes.findIndex(c => c.id === editingId);
+                clientes[index] = cliente;
+                editingId = null;
+                formTitle.textContent = '➕ Novo Cliente';
+                submitBtn.textContent = '💾 Salvar Cliente';
+                cancelBtn.style.display = 'none';
+            } else {
+                clientes.push(cliente);
+            }
+
+            salvarClientes();
+            atualizarStats();
+            renderizarTabela(searchInput.value);
+            form.reset();
+            dataCadastroInput.valueAsDate = new Date();
+        });
+
+        // Editar cliente
+        function editarCliente(id) {
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode fazer alterações!');
+                return;
+            }
+
+            const cliente = clientes.find(c => c.id === id);
+            if (!cliente) return;
+
+            editingId = id;
+            nomeInput.value = cliente.nome;
+            telefoneInput.value = cliente.telefone;
+            emailInput.value = cliente.email || '';
+            planoInput.value = cliente.plano;
+            valorInput.value = cliente.valor;
+            dataCadastroInput.value = cliente.dataCadastro;
+
+            formTitle.textContent = '✏️ Editar Cliente';
+            submitBtn.textContent = '💾 Atualizar Cliente';
+            cancelBtn.style.display = 'inline-block';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Excluir cliente
+        function excluirCliente(id) {
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode fazer alterações!');
+                return;
+            }
+
+            if (confirm('Tem certeza que deseja excluir este cliente?')) {
+                clientes = clientes.filter(c => c.id !== id);
+                salvarClientes();
+                atualizarStats();
+                renderizarTabela(searchInput.value);
+            }
+        }
+
+        // Cancelar edição
+        cancelBtn.addEventListener('click', () => {
+            editingId = null;
+            form.reset();
+            dataCadastroInput.valueAsDate = new Date();
+            formTitle.textContent = '➕ Novo Cliente';
+            submitBtn.textContent = '💾 Salvar Cliente';
+            cancelBtn.style.display = 'none';
+        });
+
+        // Buscar clientes em tempo real
+        searchInput.addEventListener('input', (e) => {
+            renderizarTabela(e.target.value);
+        });
+
+        // Verificar vencimentos a cada minuto
+        setInterval(() => {
+            atualizarStats();
+            renderizarTabela(searchInput.value);
+        }, 60000);
+
+        // Modal de Cadastro Rápido
+        const modalRapido = document.getElementById('modalRapido');
+        const btnRapido = document.getElementById('btnRapido');
+        const btnFecharRapido = document.getElementById('btnFecharRapido');
+        const btnSalvarRapido = document.getElementById('btnSalvarRapido');
+
+        btnRapido.addEventListener('click', () => {
+            modalRapido.style.display = 'flex';
+            document.getElementById('rapidoNome').focus();
+        });
+
+        btnFecharRapido.addEventListener('click', () => {
+            modalRapido.style.display = 'none';
+            document.getElementById('rapidoNome').value = '';
+            document.getElementById('rapidoTelefone').value = '';
+            document.getElementById('rapidoEmail').value = '';
+        });
+
+        btnSalvarRapido.addEventListener('click', () => {
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode fazer alterações!');
+                return;
+            }
+
+            const nome = document.getElementById('rapidoNome').value.trim();
+            const telefone = document.getElementById('rapidoTelefone').value.trim();
+            const email = document.getElementById('rapidoEmail').value.trim();
+
+            if (!nome || !telefone) {
+                alert('Preencha nome e telefone!');
+                return;
+            }
+
+            const cliente = {
+                id: Date.now(),
+                nome: nome,
+                telefone: telefone,
+                email: email,
+                plano: 'Mensal',
+                valor: 30.00,
+                dataCadastro: new Date().toISOString().split('T')[0]
+            };
+
+            clientes.push(cliente);
+            salvarClientes();
+            atualizarStats();
+            renderizarTabela(searchInput.value);
+
+            modalRapido.style.display = 'none';
+            document.getElementById('rapidoNome').value = '';
+            document.getElementById('rapidoTelefone').value = '';
+            document.getElementById('rapidoEmail').value = '';
+
+            alert('Cliente cadastrado com sucesso! Mensal = R$ 30,00');
+        });
+
+        // Fechar modal clicando fora
+        modalRapido.addEventListener('click', (e) => {
+            if (e.target === modalRapido) {
+                modalRapido.style.display = 'none';
+            }
+        });
+
+        // Modal Financeiro
+        const modalFinanceiro = document.getElementById('modalFinanceiro');
+        const btnFinanceiro = document.getElementById('btnFinanceiro');
+        const btnFecharFinanceiro = document.getElementById('btnFecharFinanceiro');
+        const financeiroContent = document.getElementById('financeiroContent');
+
+        btnFinanceiro.addEventListener('click', () => {
+            calcularFinanceiro();
+            modalFinanceiro.style.display = 'flex';
+        });
+
+        btnFecharFinanceiro.addEventListener('click', () => {
+            modalFinanceiro.style.display = 'none';
+        });
+
+        modalFinanceiro.addEventListener('click', (e) => {
+            if (e.target === modalFinanceiro) {
+                modalFinanceiro.style.display = 'none';
+            }
+        });
+
+        // Modal Administração
+        const modalAdmin = document.getElementById('modalAdmin');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const btnFecharAdmin = document.getElementById('btnFecharAdmin');
+        const adminContent = document.getElementById('adminContent');
+
+        btnAdmin.addEventListener('click', () => {
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode acessar!');
+                return;
+            }
+            modalAdmin.style.display = 'flex';
+        });
+
+        btnFecharAdmin.addEventListener('click', () => {
+            modalAdmin.style.display = 'none';
+        });
+
+        modalAdmin.addEventListener('click', (e) => {
+            if (e.target === modalAdmin) {
+                modalAdmin.style.display = 'none';
+            }
+        });
+
+        function abrirFinanceiroAdmin() {
+            modalAdmin.style.display = 'none';
+            calcularFinanceiro();
+            modalFinanceiro.style.display = 'flex';
+        }
+
+        function exportarDados() {
+            if (clientes.length === 0) {
+                alert('Nenhum cliente para exportar!');
+                return;
+            }
+
+            let csv = 'Nome,Telefone,Email,Plano,Valor,Data Cadastro,Vencimento\n';
+            clientes.forEach(c => {
+                const vencimento = new Date(c.dataCadastro);
+                vencimento.setDate(vencimento.getDate() + 30);
+                csv += `"${c.nome}","${c.telefone}","${c.email || ''}","${c.plano}",${c.valor},"${c.dataCadastro}","${vencimento.toISOString().split('T')[0]}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'clientes_toptv24h.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('Dados exportados com sucesso!');
+        }
+
+        function limparDados() {
+            if (confirm('Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita!')) {
+                if (confirm('Esta ação irá apagar todos os clientes. Continuar?')) {
+                    clientes = [];
+                    salvarClientes();
+                    atualizarStats();
+                    renderizarTabela();
+                    alert('Dados limpos com sucesso!');
+                }
+            }
+        }
+
+        function configurarPix() {
+            const novaChave = prompt('Digite a nova chave Pix:', 'toptv24h@pagamento.com');
+            if (novaChave && novaChave.trim()) {
+                localStorage.setItem('pixKey', novaChave.trim());
+                document.getElementById('pixKey').value = novaChave.trim();
+                alert('Chave Pix atualizada com sucesso!');
+            }
+        }
+
+        // Modal Fatura
+        const modalFatura = document.getElementById('modalFatura');
+        const btnFecharFatura = document.getElementById('btnFecharFatura');
+        const btnEnviarFatura = document.getElementById('btnEnviarFatura');
+        let faturaClienteId = null;
+
+        function gerarFatura(id) {
+            if (!currentUser || currentUser.nivel !== 'admin') {
+                alert('Apenas o administrador pode gerar faturas!');
+                return;
+            }
+
+            const cliente = clientes.find(c => c.id === id);
+            if (!cliente) return;
+
+            faturaClienteId = id;
+
+            const vencimento = new Date(cliente.dataCadastro);
+            vencimento.setDate(vencimento.getDate() + 30);
+
+            document.getElementById('faturaNome').textContent = cliente.nome;
+            document.getElementById('faturaTelefone').textContent = formatarTelefone(cliente.telefone);
+            document.getElementById('faturaPlano').textContent = cliente.plano;
+            document.getElementById('faturaVencimento').textContent = formatarData(vencimento.toISOString().split('T')[0]);
+            document.getElementById('faturaValor').textContent = formatarValor(cliente.valor);
+
+            modalFatura.style.display = 'flex';
+        }
+
+        function copiarPix() {
+            const pixKey = document.getElementById('pixKey').value;
+            navigator.clipboard.writeText(pixKey).then(() => {
+                alert('Chave Pix copiada: ' + pixKey);
+            }).catch(() => {
+                // Fallback para navegadores antigos
+                const input = document.getElementById('pixKey');
+                input.select();
+                document.execCommand('copy');
+                alert('Chave Pix copiada: ' + pixKey);
+            });
+        }
+
+        btnEnviarFatura.addEventListener('click', () => {
+            const cliente = clientes.find(c => c.id === faturaClienteId);
+            if (!cliente) return;
+
+            const mensagem = `Olá ${cliente.nome}!%0A%0ASua fatura da Top TV 24h está disponível.%0A%0APlano: ${cliente.plano}%0AValor: ${formatarValor(cliente.valor)}%0AVencimento: ${formatarData(new Date(new Date(cliente.dataCadastro).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])}%0A%0APague via Pix:%0AChave: toptv24h@pagamento.com%0A%0AObrigado pela preferência!`;
+
+            const telefone = cliente.telefone.replace(/\D/g, '');
+            const url = `https://wa.me/55${telefone}?text=${mensagem}`;
+
+            window.open(url, '_blank');
+            modalFatura.style.display = 'none';
+        });
+
+        btnFecharFatura.addEventListener('click', () => {
+            modalFatura.style.display = 'none';
+        });
+
+        modalFatura.addEventListener('click', (e) => {
+            if (e.target === modalFatura) {
+                modalFatura.style.display = 'none';
+            }
+        });
+
+        let graficoFinanceiro = null;
+
+        function calcularFinanceiro() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const clientesAtivos = clientes.filter(c => {
+                const cadastro = new Date(c.dataCadastro);
+                cadastro.setHours(0, 0, 0, 0);
+                const vencimento = new Date(cadastro);
+                vencimento.setDate(vencimento.getDate() + 30);
+                return vencimento >= hoje;
+            });
+
+            const totalSaldo = clientesAtivos.reduce((sum, c) => sum + c.valor, 0);
+
+            if (clientesAtivos.length === 0) {
+                financeiroContent.innerHTML = '<p style="color: #aaa; text-align: center; padding: 20px;">Nenhum cliente ativo encontrado.</p>';
+                return;
+            }
+
+            financeiroContent.innerHTML = `
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <p style="color: #aaa; font-size: 14px;">Total de Clientes Ativos</p>
+                    <p style="color: #00ff88; font-size: 2rem; font-weight: bold;">${clientesAtivos.length}</p>
+                </div>
+                <div style="background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <p style="color: #aaa; font-size: 14px;">Saldo Total</p>
+                    <p style="color: #00d4ff; font-size: 2rem; font-weight: bold;">${formatarValor(totalSaldo)}</p>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <canvas id="graficoFinanceiro"></canvas>
+                </div>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: rgba(0, 212, 255, 0.1);">
+                                <th style="padding: 10px; text-align: left; color: #00d4ff;">Nome</th>
+                                <th style="padding: 10px; text-align: left; color: #00d4ff;">Plano</th>
+                                <th style="padding: 10px; text-align: right; color: #00d4ff;">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${clientesAtivos.map(c => `
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <td style="padding: 10px;">${c.nome}</td>
+                                    <td style="padding: 10px;">${c.plano}</td>
+                                    <td style="padding: 10px; text-align: right; color: #00ff88; font-weight: bold;">${formatarValor(c.valor)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Criar gráfico
+            setTimeout(() => {
+                const ctx = document.getElementById('graficoFinanceiro').getContext('2d');
+                
+                // Destruir gráfico anterior se existir
+                if (graficoFinanceiro) {
+                    graficoFinanceiro.destroy();
+                }
+
+                // Agrupar por plano
+                const planos = {};
+                clientesAtivos.forEach(c => {
+                    if (!planos[c.plano]) {
+                        planos[c.plano] = { quantidade: 0, valor: 0 };
+                    }
+                    planos[c.plano].quantidade++;
+                    planos[c.plano].valor += c.valor;
+                });
+
+                const labels = Object.keys(planos);
+                const data = labels.map(p => planos[p].valor);
+                const backgroundColors = [
+                    'rgba(0, 212, 255, 0.7)',
+                    'rgba(0, 255, 136, 0.7)',
+                    'rgba(255, 165, 2, 0.7)',
+                    'rgba(255, 71, 87, 0.7)',
+                    'rgba(123, 44, 191, 0.7)'
+                ];
+
+                graficoFinanceiro = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Valor por Plano (R$)',
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, labels.length),
+                            borderColor: backgroundColors.slice(0, labels.length).map(c => c.replace('0.7', '1')),
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Distribuição Financeira por Plano',
+                                color: '#fff',
+                                font: { size: 16 }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: '#aaa',
+                                    callback: function(value) {
+                                        return 'R$ ' + value;
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.1)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#aaa'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }, 100);
+        }
+
+        // Inicializar
+        atualizarStats();
+        renderizarTabela();
+    </script>
+</body>
+</html>
